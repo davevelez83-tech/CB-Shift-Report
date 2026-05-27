@@ -190,13 +190,105 @@
   /* ── Net Sales highlight ── */
   #netSales {
     font-family: 'Helvetica Neue', Arial, sans-serif;
-    font-size: 18px;
-    font-weight: bold;
-    color: var(--green);
-    letter-spacing: .5px;
+    font-size: 18px; font-weight: bold;
+    color: var(--green); letter-spacing: .5px;
   }
-  @media (prefers-color-scheme: dark) {
-    #netSales { color: var(--green); }
+
+  /* ── Dictate button ── */
+  .btn-dictate { background: var(--coral); color: #FFFFFF; }
+  .btn-dictate:hover { background: #B85E54; }
+  .btn-settings { background: transparent; color: var(--muted); border: 1px solid var(--border); padding: 9px 13px; font-size: 15px; }
+  .btn-settings:hover { color: var(--teal); border-color: var(--teal); }
+
+  /* ── API Key Modal ── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,.55); z-index: 200;
+    align-items: center; justify-content: center; padding: 20px;
+  }
+  .modal-box {
+    background: var(--paper); border-radius: 14px;
+    padding: 26px; max-width: 420px; width: 100%;
+    box-shadow: 0 8px 40px rgba(0,0,0,.35);
+  }
+  .modal-title {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px; font-weight: bold; letter-spacing: 2.5px;
+    text-transform: uppercase; color: var(--teal); margin-bottom: 10px;
+  }
+  .modal-desc { font-size: 13px; color: var(--muted); margin-bottom: 18px; line-height: 1.55; }
+  .modal-input {
+    width: 100%; padding: 11px 13px; border: 1.5px solid var(--border);
+    border-radius: 7px; font-size: 13px; font-family: 'Courier New', monospace;
+    background: var(--cream); color: var(--text); outline: none; margin-bottom: 6px;
+    -webkit-appearance: none;
+  }
+  .modal-input:focus { border-color: var(--teal); }
+  .modal-error { font-size: 11px; color: var(--coral); min-height: 18px; margin-bottom: 14px; }
+  .modal-btns { display: flex; gap: 10px; justify-content: flex-end; }
+  .modal-btn-primary {
+    padding: 11px 22px; background: var(--teal); color: #FFF; border: none;
+    border-radius: 7px; font-size: 11px; font-weight: bold;
+    letter-spacing: 1.2px; text-transform: uppercase; cursor: pointer;
+  }
+  .modal-btn-secondary {
+    padding: 11px 18px; background: transparent; color: var(--muted);
+    border: 1px solid var(--border); border-radius: 7px; font-size: 11px; cursor: pointer;
+  }
+
+  /* ── Dictation bottom sheet ── */
+  .dictate-panel {
+    display: none; position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--paper); border-radius: 18px 18px 0 0;
+    padding: 22px 20px 36px; z-index: 150;
+    box-shadow: 0 -4px 30px rgba(0,0,0,.22);
+    flex-direction: column; gap: 14px; max-height: 58vh;
+  }
+  .dp-header {
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px; font-weight: bold; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--text);
+  }
+  .rec-dot {
+    width: 10px; height: 10px; border-radius: 50%; background: #C0392B;
+    display: inline-block; flex-shrink: 0;
+    animation: pulse-dot 1s ease-in-out infinite;
+  }
+  @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1);}50%{opacity:.45;transform:scale(.75);} }
+  .dp-transcript {
+    flex: 1; overflow-y: auto; background: var(--cream);
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: 13px; font-size: 14px; color: var(--text);
+    line-height: 1.65; min-height: 90px; max-height: 220px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .dp-status { font-size: 12px; color: var(--muted); font-family: 'Helvetica Neue', Arial, sans-serif; }
+  .dp-btns { display: flex; gap: 10px; }
+  .dp-btn-stop {
+    flex: 1; padding: 16px; background: var(--teal); color: #FFF;
+    border: none; border-radius: 10px; font-size: 14px; font-weight: bold;
+    letter-spacing: .8px; text-transform: uppercase; cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .dp-btn-stop:disabled { opacity: .45; }
+  .dp-btn-cancel {
+    padding: 16px 22px; background: transparent; color: var(--muted);
+    border: 1px solid var(--border); border-radius: 10px;
+    font-size: 14px; cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .dp-btn-cancel:disabled { opacity: .45; }
+
+  /* ── Success toast ── */
+  .success-toast {
+    display: none; position: fixed; top: 22px; left: 50%;
+    transform: translateX(-50%); background: var(--green);
+    color: #FFF; padding: 13px 26px; border-radius: 10px;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 12px; font-weight: bold; letter-spacing: 1.5px;
+    text-transform: uppercase; z-index: 300;
+    box-shadow: 0 4px 18px rgba(0,0,0,.25); white-space: nowrap;
   }
 
   /* ── Same Date LY (year-over-year) ── */
@@ -491,9 +583,11 @@
 </table>
 
 <div class="action-bar">
+  <button class="btn btn-dictate" onclick="startDictation()">🎙 Dictate Shift</button>
   <button class="btn btn-copy"  onclick="copyReport()">📋 Copy Report</button>
   <button class="btn btn-wx"    onclick="fetchWeather()">🌤 Refresh Weather</button>
   <button class="btn btn-clear" onclick="clearReport()">↺ Clear Fields</button>
+  <button class="btn btn-settings" onclick="showKeyModal(null)" title="API Key Settings">⚙️</button>
   <span class="wx-status" id="wxStatus"></span>
 </div>
 
@@ -777,8 +871,280 @@ function flashCopied() {
 }
 
 // ══════════════════════════════════════════
-//  CLEAR
+//  VOICE DICTATION + AI FIELD POPULATION
 // ══════════════════════════════════════════
+const CB_KEY = 'cb_anthropic_key';
+let recog = null, dictating = false, fullTranscript = '';
+
+function getApiKey() { return localStorage.getItem(CB_KEY) || ''; }
+function saveApiKey(k) { localStorage.setItem(CB_KEY, k.trim()); }
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── API Key Modal ──────────────────────────
+function showKeyModal(onSuccess) {
+  const m = document.getElementById('keyModal');
+  m.style.display = 'flex';
+  document.getElementById('keyInput').value = getApiKey();
+  document.getElementById('keyError').textContent = '';
+  document.getElementById('keySaveBtn').onclick = () => {
+    const k = document.getElementById('keyInput').value.trim();
+    if (!k) { document.getElementById('keyError').textContent = 'Paste your API key above.'; return; }
+    saveApiKey(k);
+    m.style.display = 'none';
+    if (onSuccess) onSuccess();
+  };
+  document.getElementById('keyCancelBtn').onclick = () => { m.style.display = 'none'; };
+  // Close on overlay tap
+  m.onclick = (e) => { if (e.target === m) m.style.display = 'none'; };
+  setTimeout(() => document.getElementById('keyInput').focus(), 100);
+}
+
+// ── Start Dictation ────────────────────────
+function startDictation() {
+  if (!getApiKey()) { showKeyModal(startDictation); return; }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    alert('Voice input requires Safari on iPad or Chrome on desktop. Please open this page in Safari.');
+    return;
+  }
+  fullTranscript = '';
+  document.getElementById('transcriptDisplay').innerHTML = '';
+  document.getElementById('dictateStatus').textContent = 'Listening… speak your shift recap';
+  document.getElementById('dpHint').textContent = 'Speak naturally. Tap Stop when finished.';
+  document.getElementById('recDot').style.display = 'inline-block';
+  document.getElementById('stopProcessBtn').disabled = false;
+  document.getElementById('cancelDictateBtn').disabled = false;
+  document.getElementById('dictatePanel').style.display = 'flex';
+
+  recog = new SR();
+  recog.continuous = false;   // iOS-safe: we restart on onend instead
+  recog.interimResults = true;
+  recog.lang = 'en-US';
+  recog.onresult = e => {
+    let fin = '', interim = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      e.results[i].isFinal ? fin += e.results[i][0].transcript + ' ' : interim += e.results[i][0].transcript;
+    }
+    if (fin) fullTranscript += fin;
+    document.getElementById('transcriptDisplay').innerHTML =
+      escHtml(fullTranscript) +
+      '<em style="color:var(--muted)">' + escHtml(interim) + '</em>';
+    // Auto-scroll to bottom
+    const td = document.getElementById('transcriptDisplay');
+    td.scrollTop = td.scrollHeight;
+  };
+  recog.onend = () => {
+    // Auto-restart on iOS which stops continuous recognition after silence
+    if (dictating) { try { recog.start(); } catch(err) {} }
+  };
+  recog.onerror = e => {
+    if (e.error === 'not-allowed') {
+      document.getElementById('dictateStatus').textContent = '⚠ Microphone access denied — check Safari settings.';
+      document.getElementById('recDot').style.display = 'none';
+      dictating = false;
+    }
+  };
+  dictating = true;
+  recog.start();
+}
+
+// ── Cancel ─────────────────────────────────
+function cancelDictation() {
+  dictating = false;
+  if (recog) { try { recog.stop(); } catch(e) {} recog = null; }
+  document.getElementById('dictatePanel').style.display = 'none';
+}
+
+// ── Stop & Process ──────────────────────────
+async function stopAndProcess() {
+  dictating = false;
+  if (recog) { try { recog.stop(); } catch(e) {} recog = null; }
+
+  const t = fullTranscript.trim();
+  if (!t) {
+    document.getElementById('dictateStatus').textContent = 'Nothing captured — tap Cancel and try again.';
+    return;
+  }
+  document.getElementById('recDot').style.display = 'none';
+  document.getElementById('dictateStatus').textContent = 'Processing with AI…';
+  document.getElementById('dpHint').textContent = 'Extracting field data from your recap…';
+  document.getElementById('stopProcessBtn').disabled = true;
+  document.getElementById('cancelDictateBtn').disabled = true;
+
+  try {
+    const json = await callClaudeForFields(t);
+    fillReportFromData(json);
+    document.getElementById('dictatePanel').style.display = 'none';
+    const toast = document.getElementById('successToast');
+    toast.style.display = 'block';
+    setTimeout(() => toast.style.display = 'none', 3500);
+  } catch(err) {
+    document.getElementById('dictateStatus').textContent = '⚠ ' + err.message;
+    document.getElementById('dpHint').textContent = 'Check your API key or try again.';
+    document.getElementById('cancelDictateBtn').disabled = false;
+  }
+}
+
+// ── Claude API Call ────────────────────────
+async function callClaudeForFields(transcript) {
+  const now = new Date();
+  const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const dateCtx = DAYS[now.getDay()] + ' ' + (now.getMonth()+1) + '/' + now.getDate() + '/' + now.getFullYear();
+
+  const sys =
+`You are a shift data extractor for Cane & Barrel bar at AC Hotel St. Petersburg. Today is ${dateCtx}.
+Extract all shift info from the manager's voice memo and return ONLY a valid JSON object — no markdown, no code fences, no explanation.
+
+Return this shape (omit any key not mentioned):
+{
+  "lastCall": "10:30 PM",
+  "occupancy": "78%",
+  "reservations": "38 / 42",
+  "finalCount": "156",
+  "comps": "$60.00",
+  "netSales": "$4,200.00",
+  "priorWeekSales": "$3,950.00",
+  "lySales": "$3,800.00",
+  "staffing": {
+    "host": ["Eva"],
+    "barBack": ["Tony"],
+    "bartenders": ["Sam", "Juliana"],
+    "servers": ["Heaven", "Cordell"],
+    "support": ["Angelo"]
+  },
+  "notes": {
+    "guestFeedback": "Write in complete professional sentences.",
+    "service": "Write in complete professional sentences.",
+    "maintenance": "Write in complete professional sentences.",
+    "passAlong": "Write in complete professional sentences."
+  }
+}
+
+Rules:
+- Dollar amounts: always include $ and two decimal places with comma separators e.g. $4,200.00
+- Occupancy: number + % e.g. "78%"
+- Last call: 12-hour format with AM/PM e.g. "11:00 PM"
+- Reservations: "booked / actual covers" e.g. "38 / 42"
+- Notes: complete professional sentences, not bullet points
+- "Noodle" means a new/trainee staff member — include their name normally
+- Known staff for reference (only use if mentioned): Sam, Juliana, JC, Mary Sierra (bartenders); Eva, Heaven, Cordell, Logan, Kylie (servers/hosts); Tony (barback); Angelo (support)
+- Return ONLY the raw JSON object. Nothing else.`;
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': getApiKey(),
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      system: sys,
+      messages: [{ role: 'user', content: transcript }]
+    })
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    if (res.status === 401) throw new Error('Invalid API key — tap ⚙️ to update it.');
+    throw new Error((err.error && err.error.message) || 'API error ' + res.status);
+  }
+
+  const data = await res.json();
+  const raw = ((data.content && data.content[0] && data.content[0].text) || '')
+    .replace(/```json|```/g, '').trim();
+  try {
+    return JSON.parse(raw);
+  } catch(e) {
+    throw new Error('Could not parse AI response. Try again.');
+  }
+}
+
+// ── Populate Form From JSON ────────────────
+function fillReportFromData(d) {
+  if (!d) return;
+
+  if (d.lastCall) {
+    const el = document.querySelector('[data-time="1"]');
+    if (el) { el.textContent = d.lastCall; formatTime(el); }
+  }
+  if (d.occupancy) {
+    const el = document.querySelector('[data-percent="1"]');
+    if (el) { el.textContent = d.occupancy; formatPercent(el); }
+  }
+  if (d.reservations) {
+    const el = document.querySelector('[data-reservations="1"]');
+    if (el) { el.textContent = d.reservations; formatReservations(el); }
+  }
+  if (d.finalCount) {
+    document.querySelectorAll('.lbl').forEach(lbl => {
+      if (lbl.textContent.trim() === 'Final Count') {
+        const s = lbl.nextElementSibling && lbl.nextElementSibling.querySelector('[contenteditable]');
+        if (s) s.textContent = d.finalCount;
+      }
+    });
+  }
+  if (d.lySales) {
+    const e = document.getElementById('lySales');
+    if (e) { e.textContent = d.lySales; formatCurrency(e); }
+  }
+  if (d.netSales) {
+    const e = document.getElementById('netSales');
+    if (e) { e.textContent = d.netSales; formatCurrency(e); }
+  }
+  if (d.comps) {
+    const e = document.querySelector('.comps-val [data-currency="1"]');
+    if (e) { e.textContent = d.comps; formatCurrency(e); }
+  }
+  if (d.priorWeekSales) {
+    document.querySelectorAll('[data-currency="1"]').forEach(e => {
+      if (e.id !== 'lySales' && e.id !== 'netSales' && !e.closest('.comps-val')) {
+        e.textContent = d.priorWeekSales; formatCurrency(e);
+      }
+    });
+  }
+
+  // Staffing
+  if (d.staffing) {
+    var fillRole = function(roleName, names) {
+      var rows = [];
+      document.querySelectorAll('td.role-lbl').forEach(function(td) {
+        if (td.textContent.trim() === roleName) rows.push(td.closest('tr'));
+      });
+      var idx = 0;
+      rows.forEach(function(row) {
+        row.querySelectorAll('.name-val [contenteditable]').forEach(function(slot) {
+          if (idx < names.length) slot.textContent = names[idx++];
+        });
+      });
+    };
+    if (d.staffing.host)       fillRole('Host',       d.staffing.host);
+    if (d.staffing.barBack)    fillRole('Bar Back',    d.staffing.barBack);
+    if (d.staffing.bartenders) fillRole('Bartenders',  d.staffing.bartenders);
+    if (d.staffing.servers)    fillRole('Servers',     d.staffing.servers);
+    if (d.staffing.support)    fillRole('Support',     d.staffing.support);
+  }
+
+  // Notes
+  if (d.notes) {
+    var setNote = function(id, val) {
+      var e = document.getElementById(id);
+      if (e && val) e.textContent = val;
+    };
+    setNote('note-guest',   d.notes.guestFeedback);
+    setNote('note-service', d.notes.service);
+    setNote('note-maint',   d.notes.maintenance);
+    setNote('note-pass',    d.notes.passAlong);
+  }
+
+  recalcLyVariance();
+}
+
 function clearReport() {
   if (!confirm('Clear all filled-in fields?')) return;
   document.querySelectorAll('[contenteditable="true"]').forEach(el => el.textContent = '');
@@ -788,6 +1154,38 @@ function clearReport() {
   fetchWeather();
 }
 </script>
+
+<!-- ══ API Key Modal ══ -->
+<div class="modal-overlay" id="keyModal">
+  <div class="modal-box">
+    <div class="modal-title">Anthropic API Key</div>
+    <div class="modal-desc">Your key is stored only on this device and never leaves it except to call the Anthropic API. Get one at <strong>console.anthropic.com</strong>.</div>
+    <input class="modal-input" type="password" id="keyInput" placeholder="sk-ant-api03-…"
+           autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+    <div class="modal-error" id="keyError"></div>
+    <div class="modal-btns">
+      <button class="modal-btn-secondary" id="keyCancelBtn">Cancel</button>
+      <button class="modal-btn-primary"   id="keySaveBtn">Save &amp; Continue</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ Dictation Panel ══ -->
+<div class="dictate-panel" id="dictatePanel">
+  <div class="dp-header">
+    <span class="rec-dot" id="recDot"></span>
+    <span id="dictateStatus">Listening… speak your shift recap</span>
+  </div>
+  <div class="dp-transcript" id="transcriptDisplay"></div>
+  <div class="dp-status" id="dpHint">Speak naturally. Tap Stop when finished.</div>
+  <div class="dp-btns">
+    <button class="dp-btn-stop"   id="stopProcessBtn"  onclick="stopAndProcess()">Stop &amp; Fill Report</button>
+    <button class="dp-btn-cancel" id="cancelDictateBtn" onclick="cancelDictation()">Cancel</button>
+  </div>
+</div>
+
+<!-- ══ Success Toast ══ -->
+<div class="success-toast" id="successToast">✓ Report Filled</div>
 
 </body>
 </html>
