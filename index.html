@@ -230,6 +230,43 @@
   }
   .name-val [contenteditable] { text-align: center; }
 
+  /* ── Labor tables ── */
+  /* Compact: tighter padding/height than standard data rows, scoped to labor tables only */
+  table.labor-table td { padding: 3px 8px; }
+  table.labor-table .role-lbl { padding: 3px 9px 3px 6px; font-size: 9px; letter-spacing: 1.2px; }
+  table.labor-table .name-val { padding: 3px 8px; font-size: 14px; }
+  table.labor-table .name-val [contenteditable] { min-height: 16px; }
+  table.labor-table .hrs-val [contenteditable] { min-height: 16px; }
+  table.labor-table .labor-head td { padding: 4px 8px; }
+  .labor-head td {
+    background: var(--navy);
+    color: var(--teal);
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 9px; font-weight: bold;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 5px 10px; text-align: center;
+  }
+  .labor-head .lh-pos  { text-align: right; width: 130px; }
+  .labor-head .lh-name { text-align: center; }
+  .labor-head .lh-hrs  { text-align: center; width: 80px; }
+  .hrs-val { text-align: center; width: 80px; }
+  .hrs-val [contenteditable] { text-align: center; }
+  .hrs-input { font-variant-numeric: tabular-nums; }
+  .labor-total-row td {
+    background: var(--cream-dk);
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-weight: bold;
+  }
+  .labor-metric {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 14px; font-weight: bold;
+    color: var(--teal-dk); text-align: left;
+    font-variant-numeric: tabular-nums;
+  }
+  @media (prefers-color-scheme: dark) {
+    .labor-metric { color: var(--teal-dk); }
+  }
+
   /* ── Notes ── */
   .note-lbl {
     background: var(--cream);
@@ -371,7 +408,7 @@
           <td class="lbl">Res / Covers</td>
           <td class="val val-half"><span contenteditable="true" data-ph="0 / 0" data-reservations="1"></span></td>
           <td class="lbl">Final Count</td>
-          <td class="val val-half"><span contenteditable="true" data-ph="—"></span></td>
+          <td class="val val-half"><span contenteditable="true" id="finalCount" data-ph="—"></span></td>
         </tr>
         <tr>
           <td class="lbl">Net Sales</td>
@@ -389,60 +426,198 @@
     </td>
   </tr>
 
-  <!-- ══════════ STAFFING (3-col uniform, zero spans) ══════════ -->
-  <tr><td class="sec-hd-cell">Staffing</td></tr>
+  <!-- ══════════ LABOR SUMMARY (calculated; no individual rates) ══════════ -->
+  <tr><td class="sec-hd-cell">Labor Summary</td></tr>
   <tr>
     <td class="section-wrap">
       <table class="data-table" cellpadding="0" cellspacing="0" border="0">
-        <tr class="mgr-row">
-          <td class="role-lbl" style="color:var(--text);">Manager</td>
-          <td class="val name-val"><span contenteditable="true" data-ph="Name">David</span></td>
-          <td class="val name-val"><span contenteditable="true" data-ph="—"></span></td>
+        <tr>
+          <td class="lbl">Total Labor</td>
+          <td class="val labor-metric" colspan="3"><span id="sumTotalLabor">—</span></td>
+          <td class="lbl">Labor % (Total)</td>
+          <td class="val labor-metric" colspan="3"><span id="sumLaborPct">—</span></td>
         </tr>
         <tr>
+          <td class="lbl">FOH Labor %</td>
+          <td class="val labor-metric" colspan="3"><span id="sumFohPct">—</span></td>
+          <td class="lbl">BOH Labor %</td>
+          <td class="val labor-metric" colspan="3"><span id="sumBohPct">—</span></td>
+        </tr>
+        <tr>
+          <td class="lbl">SPLH (Total)</td>
+          <td class="val labor-metric" colspan="3"><span id="sumSplhTotal">—</span></td>
+          <td class="lbl">Avg Check (PPA)</td>
+          <td class="val labor-metric" colspan="3"><span id="sumAvgCheck">—</span></td>
+        </tr>
+        <tr>
+          <td class="lbl">SPLH (FOH)</td>
+          <td class="val labor-metric" colspan="3"><span id="sumSplhFoh">—</span></td>
+          <td class="lbl">SPLH (BOH)</td>
+          <td class="val labor-metric" colspan="3"><span id="sumSplhBoh">—</span></td>
+        </tr>
+        <tr>
+          <td class="lbl">Total Hours</td>
+          <td class="val labor-metric" colspan="3"><span id="sumTotalHours">—</span></td>
+          <td class="lbl">Total Guests</td>
+          <td class="val labor-metric" colspan="3"><span id="sumTotalGuests">—</span></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- ══════════ LABOR DETAIL — FRONT OF HOUSE ══════════ -->
+  <tr><td class="sec-hd-cell">Labor Detail · Front of House</td></tr>
+  <tr>
+    <td class="section-wrap">
+      <table class="data-table labor-table" cellpadding="0" cellspacing="0" border="0">
+        <tr class="labor-head">
+          <td class="lh-pos">Position</td>
+          <td class="lh-name">Name</td>
+          <td class="lh-hrs">Hours</td>
+        </tr>
+        <tr class="mgr-row labor-row" data-rate-key="manager">
+          <td class="role-lbl" style="color:var(--text);">Manager</td>
+          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-row" data-rate-key="supervisor">
+          <td class="role-lbl">Supervisor</td>
+          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-row" data-rate-key="host">
           <td class="role-lbl">Host</td>
           <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
-          <td class="val name-val"><span contenteditable="true" data-ph="Name (if 2nd)"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
         </tr>
-        <tr>
+        <tr class="labor-row" data-rate-key="barback">
           <td class="role-lbl">Bar Back</td>
           <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
-          <td class="val name-val"><span contenteditable="true" data-ph="Name (if 2nd)"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
         </tr>
-        <tr>
-          <td class="role-lbl">Bartenders</td>
+        <tr class="labor-row" data-rate-key="bartender">
+          <td class="role-lbl">Bartender</td>
           <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
-          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
         </tr>
-        <tr>
-          <td class="role-lbl">Bartenders</td>
+        <tr class="labor-row" data-rate-key="bartender">
+          <td class="role-lbl">Bartender</td>
           <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
-          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
         </tr>
-        <tr>
-          <td class="role-lbl">Bartenders</td>
+        <tr class="labor-row" data-rate-key="bartender">
+          <td class="role-lbl">Bartender</td>
           <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
-          <td class="val name-val"><span contenteditable="true" data-ph="—"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
         </tr>
-        <tr>
-          <td class="role-lbl">Servers</td>
+        <tr class="labor-row" data-rate-key="bartender">
+          <td class="role-lbl">Bartender</td>
           <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
-          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
         </tr>
-        <tr>
-          <td class="role-lbl">Servers</td>
+        <tr class="labor-row" data-rate-key="bartender">
+          <td class="role-lbl">Bartender</td>
           <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
-          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
         </tr>
-        <tr>
-          <td class="role-lbl">Servers</td>
+        <tr class="labor-row" data-rate-key="bartender">
+          <td class="role-lbl">Bartender</td>
           <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
-          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
         </tr>
-        <tr>
+        <tr class="labor-row" data-rate-key="server">
+          <td class="role-lbl">Server</td>
+          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-row" data-rate-key="server">
+          <td class="role-lbl">Server</td>
+          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-row" data-rate-key="server">
+          <td class="role-lbl">Server</td>
+          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-row" data-rate-key="server">
+          <td class="role-lbl">Server</td>
+          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-row" data-rate-key="server">
+          <td class="role-lbl">Server</td>
+          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-row" data-rate-key="server">
+          <td class="role-lbl">Server</td>
+          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-row" data-rate-key="support">
           <td class="role-lbl">Support</td>
           <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-row" data-rate-key="support">
+          <td class="role-lbl">Support</td>
           <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-total-row">
+          <td class="role-lbl" style="color:var(--text);">Total FOH</td>
+          <td class="val labor-metric" style="text-align:center;"><span id="fohHours">— hrs</span></td>
+          <td class="val labor-metric" style="text-align:center;"><span id="fohCost">—</span></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- ══════════ LABOR DETAIL — BACK OF HOUSE ══════════ -->
+  <tr><td class="sec-hd-cell">Labor Detail · Back of House</td></tr>
+  <tr>
+    <td class="section-wrap">
+      <table class="data-table labor-table" cellpadding="0" cellspacing="0" border="0">
+        <tr class="labor-head">
+          <td class="lh-pos">Position</td>
+          <td class="lh-name">Name</td>
+          <td class="lh-hrs">Hours</td>
+        </tr>
+        <tr class="labor-row" data-rate-key="linecook">
+          <td class="role-lbl">Line Cook</td>
+          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-row" data-rate-key="linecook">
+          <td class="role-lbl">Line Cook</td>
+          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-row" data-rate-key="tempchriss">
+          <td class="role-lbl">Temp Chriss</td>
+          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-row" data-rate-key="tempfrei">
+          <td class="role-lbl">Temp Frei</td>
+          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-row" data-rate-key="dishwasher">
+          <td class="role-lbl">Dishwasher</td>
+          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-row" data-rate-key="steward">
+          <td class="role-lbl">Steward</td>
+          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-total-row">
+          <td class="role-lbl" style="color:var(--text);">Total BOH</td>
+          <td class="val labor-metric" style="text-align:center;"><span id="bohHours">— hrs</span></td>
+          <td class="val labor-metric" style="text-align:center;"><span id="bohCost">—</span></td>
         </tr>
       </table>
     </td>
@@ -701,6 +876,95 @@ function recalcLyVariance() {
 
 
 // ══════════════════════════════════════════
+//  LABOR ENGINE — baked-in rate table (rates never displayed)
+//  Update a rate here when you learn it. null = unknown (row skipped).
+// ══════════════════════════════════════════
+const PAY_RATES = {
+  manager:        null,   // excluded from labor cost
+  supervisor:     22.00,
+  host:           16.00,
+  barback:        12.36,
+  bartender:      10.98,  // FL tipped cash wage (before tips)
+  server:         10.98,  // FL tipped cash wage (before tips)
+  support:        15.00,
+  linecook:       null,   // unknown
+  tempchriss:     null,   // unknown
+  tempfrei:       null,   // unknown
+  dishwasher:     15.00,  // Matt
+  steward:        16.39    // Glenn
+};
+const FOH_KEYS = ['manager','supervisor','host','barback','bartender','server','support'];
+
+function num(el) {
+  if (!el) return 0;
+  const v = parseFloat((el.textContent || '').replace(/[^0-9.\-]/g, ''));
+  return isNaN(v) ? 0 : v;
+}
+function money(n) {
+  return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function recalcLabor() {
+  let fohCost = 0, bohCost = 0, fohHrs = 0, bohHrs = 0;
+
+  document.querySelectorAll('.labor-row').forEach(row => {
+    const key  = row.getAttribute('data-rate-key');
+    const hrsEl = row.querySelector('.hrs-input');
+    const hrs  = num(hrsEl);
+    if (hrs <= 0) return;
+    const rate = PAY_RATES[key];
+    const isFoh = FOH_KEYS.includes(key);
+    if (isFoh) fohHrs += hrs; else bohHrs += hrs;
+    if (rate != null) {
+      const cost = hrs * rate;
+      if (isFoh) fohCost += cost; else bohCost += cost;
+    }
+  });
+
+  const totalCost  = fohCost + bohCost;
+  const totalHrs   = fohHrs + bohHrs;
+  const netSales   = num(document.getElementById('netSales'));
+  const guests     = num(document.getElementById('finalCount'));
+
+  // Per-table totals
+  document.getElementById('fohHours').textContent = fohHrs > 0 ? fohHrs.toFixed(1) + ' hrs' : '— hrs';
+  document.getElementById('bohHours').textContent = bohHrs > 0 ? bohHrs.toFixed(1) + ' hrs' : '— hrs';
+  document.getElementById('fohCost').textContent  = fohCost > 0 ? money(fohCost) : '—';
+  document.getElementById('bohCost').textContent  = bohCost > 0 ? money(bohCost) : '—';
+
+  // Summary block
+  const set = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
+  set('sumTotalLabor',  totalCost > 0 ? money(totalCost) : '—');
+  set('sumLaborPct',    (netSales > 0 && totalCost > 0) ? ((totalCost/netSales)*100).toFixed(1) + '%' : '—');
+  set('sumFohPct',      (netSales > 0 && fohCost > 0)   ? ((fohCost/netSales)*100).toFixed(1) + '%'   : '—');
+  set('sumBohPct',      (netSales > 0 && bohCost > 0)   ? ((bohCost/netSales)*100).toFixed(1) + '%'   : '—');
+  set('sumSplhTotal',   (totalHrs > 0 && netSales > 0)  ? money(netSales/totalHrs)  : '—');
+  set('sumSplhFoh',     (fohHrs > 0 && netSales > 0)    ? money(netSales/fohHrs)    : '—');
+  set('sumSplhBoh',     (bohHrs > 0 && netSales > 0)    ? money(netSales/bohHrs)    : '—');
+  set('sumAvgCheck',    (guests > 0 && netSales > 0)    ? money(netSales/guests)    : '—');
+  set('sumTotalHours',  totalHrs > 0 ? totalHrs.toFixed(1) + ' hrs' : '—');
+  set('sumTotalGuests', guests > 0 ? String(Math.round(guests)) : '—');
+}
+
+// Hours inputs: format to 1 decimal on blur, recalc live
+document.querySelectorAll('.hrs-input').forEach(el => {
+  el.addEventListener('input', recalcLabor);
+  el.addEventListener('blur', () => {
+    const v = num(el);
+    el.textContent = v > 0 ? v.toFixed(1) : '';
+    recalcLabor();
+  });
+  el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); el.blur(); } });
+});
+// Net Sales + Final Count also feed labor metrics
+['netSales','finalCount'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) { el.addEventListener('blur', recalcLabor); el.addEventListener('input', recalcLabor); }
+});
+recalcLabor();
+
+
+// ══════════════════════════════════════════
 //  COPY
 // ══════════════════════════════════════════
 function copyReport() {
@@ -709,6 +973,7 @@ function copyReport() {
   document.querySelectorAll('[data-reservations="1"]').forEach(formatReservations);
   document.querySelectorAll('[data-time="1"]').forEach(formatTime);
   recalcLyVariance();
+  recalcLabor();
 
   const root  = document.getElementById('reportRoot');
   const clone = root.cloneNode(true);
@@ -780,9 +1045,8 @@ function flashCopied() {
 function clearReport() {
   if (!confirm('Clear all filled-in fields?')) return;
   document.querySelectorAll('[contenteditable="true"]').forEach(el => el.textContent = '');
-  const mgrRow = document.querySelector('.mgr-row');
-  if (mgrRow) mgrRow.querySelector('[contenteditable]').textContent = 'David';
   recalcLyVariance();
+  recalcLabor();
   fetchWeather();
 }
 </script>
