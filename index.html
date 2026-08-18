@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -407,7 +408,7 @@
   </tr>
 
   <!-- ══════════ OVERVIEW ══════════ -->
-  <tr><td class="sec-hd-cell">Overview</td></tr>
+  <tr><td class="sec-hd-cell">Cane &amp; Barrel Overview</td></tr>
   <tr>
     <td class="section-wrap">
       <table class="data-table" cellpadding="0" cellspacing="0" border="0">
@@ -436,6 +437,21 @@
           <td class="val" colspan="3"><span contenteditable="true" id="lySales" data-ph="$0.00" data-currency="1"></span></td>
           <td class="lbl">Prior Week</td>
           <td class="val" colspan="3"><span contenteditable="true" data-ph="$0.00" data-currency="1"></span></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- ══════════ BREAKFAST / AC LOUNGE OVERVIEW ══════════ -->
+  <tr><td class="sec-hd-cell">Breakfast / AC Lounge Overview</td></tr>
+  <tr>
+    <td class="section-wrap">
+      <table class="data-table" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td class="lbl">AC Net Sales</td>
+          <td class="val" colspan="3"><span contenteditable="true" id="acNetSales" data-ph="$0.00" data-currency="1"></span><span class="ly-var" id="acLyVariance"></span></td>
+          <td class="lbl">Same Date LY</td>
+          <td class="val" colspan="3"><span contenteditable="true" id="acLySales" data-ph="$0.00" data-currency="1"></span></td>
         </tr>
       </table>
     </td>
@@ -475,6 +491,11 @@
           <td class="val labor-metric" colspan="3"><span id="sumTotalHours">—</span></td>
           <td class="lbl">Total Guests</td>
           <td class="val labor-metric" colspan="3"><span id="sumTotalGuests">—</span></td>
+        </tr>
+        <tr>
+          <td colspan="8" style="background:var(--cream); padding:6px 10px; border:1px solid var(--border); font-family:'Helvetica Neue',Arial,sans-serif; font-size:9px; line-height:1.5; color:var(--muted); font-style:italic; text-align:left; letter-spacing:.2px;">
+            Labor&nbsp;%&nbsp;and SPLH are calculated on combined Cane&nbsp;&amp;&nbsp;Barrel&nbsp;+&nbsp;AC&nbsp;Lounge net sales. Avg&nbsp;Check&nbsp;(PPA) uses Cane&nbsp;&amp;&nbsp;Barrel net sales only and Final Count (C&amp;B covers). Hours and wages are estimates, not exact payroll figures; manager hours are excluded from labor cost. Figures for management review only.
+          </td>
         </tr>
       </table>
     </td>
@@ -577,6 +598,16 @@
         </tr>
         <tr class="labor-row" data-rate-key="support">
           <td class="role-lbl">Support</td>
+          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-row" data-rate-key="acbartender">
+          <td class="role-lbl">AC Bartender</td>
+          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-row" data-rate-key="acserver">
+          <td class="role-lbl">AC Server</td>
           <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
           <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
         </tr>
@@ -864,10 +895,10 @@ attachFormatter('[data-time="1"]',         formatTime);
 // ══════════════════════════════════════════
 //  SAME DATE LY — year-over-year variance
 // ══════════════════════════════════════════
-function recalcLyVariance() {
-  const lyEl  = document.getElementById('lySales');
-  const netEl = document.getElementById('netSales');
-  const varEl = document.getElementById('lyVariance');
+function computeVariance(netId, lyId, varId) {
+  const netEl = document.getElementById(netId);
+  const lyEl  = document.getElementById(lyId);
+  const varEl = document.getElementById(varId);
   if (!lyEl || !netEl || !varEl) return;
   const ly  = parseFloat((lyEl.textContent  || '').replace(/[^0-9.\-]/g, ''));
   const net = parseFloat((netEl.textContent || '').replace(/[^0-9.\-]/g, ''));
@@ -881,13 +912,26 @@ function recalcLyVariance() {
   varEl.textContent = (up ? '▲ ' : down ? '▼ ' : '± ') + Math.abs(pct).toFixed(1) + '%';
   varEl.className   = 'ly-var ' + (up ? 'ly-var-up' : down ? 'ly-var-down' : 'ly-var-flat');
 }
-['lySales','netSales'].forEach(function(id) {
+// C&B badge: C&B Net vs C&B LY.  AC badge: AC Net vs AC LY.  Kept fully separate.
+function recalcLyVariance() {
+  computeVariance('netSales',   'lySales',   'lyVariance');
+  computeVariance('acNetSales', 'acLySales', 'acLyVariance');
+}
+['lySales','netSales','acNetSales','acLySales'].forEach(function(id) {
   const el = document.getElementById(id);
   if (el) {
     el.addEventListener('blur',  recalcLyVariance);
     el.addEventListener('input', recalcLyVariance);
   }
 });
+// AC Net Sales also feeds the labor denominators
+(function() {
+  const acEl = document.getElementById('acNetSales');
+  if (acEl) {
+    acEl.addEventListener('blur',  recalcLabor);
+    acEl.addEventListener('input', recalcLabor);
+  }
+})();
 
 
 // ══════════════════════════════════════════
@@ -948,9 +992,11 @@ const PAY_RATES = {
   tempchriss:     20.00,
   tempfrei:       19.00,
   dishwasher:     15.00,  // Matt
-  steward:        16.39    // Glenn
+  steward:        16.39,   // Glenn
+  acbartender:    11.00,  // AC Lounge bartender
+  acserver:       15.00    // AC Lounge server
 };
-const FOH_KEYS = ['manager','supervisor','host','barback','bartender','server','support'];
+const FOH_KEYS = ['manager','supervisor','host','barback','bartender','server','support','acbartender','acserver'];
 
 function num(el) {
   if (!el) return 0;
@@ -980,7 +1026,9 @@ function recalcLabor() {
 
   const totalCost  = fohCost + bohCost;
   const totalHrs   = fohHrs + bohHrs;
-  const netSales   = num(document.getElementById('netSales'));
+  const netSales   = num(document.getElementById('netSales'));      // C&B only
+  const acNet      = num(document.getElementById('acNetSales'));    // AC Lounge only
+  const combinedNet = netSales + acNet;                            // labor % / SPLH denominator
   const guests     = num(document.getElementById('finalCount'));
 
   // Per-table totals
@@ -990,14 +1038,15 @@ function recalcLabor() {
   document.getElementById('bohCost').textContent  = bohCost > 0 ? money(bohCost) : '—';
 
   // Summary block
+  // Labor % and SPLH divide by COMBINED net (C&B + AC). PPA stays on C&B net only.
   const set = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
   set('sumTotalLabor',  totalCost > 0 ? money(totalCost) : '—');
-  set('sumLaborPct',    (netSales > 0 && totalCost > 0) ? ((totalCost/netSales)*100).toFixed(1) + '%' : '—');
-  set('sumFohPct',      (netSales > 0 && fohCost > 0)   ? ((fohCost/netSales)*100).toFixed(1) + '%'   : '—');
-  set('sumBohPct',      (netSales > 0 && bohCost > 0)   ? ((bohCost/netSales)*100).toFixed(1) + '%'   : '—');
-  set('sumSplhTotal',   (totalHrs > 0 && netSales > 0)  ? money(netSales/totalHrs)  : '—');
-  set('sumSplhFoh',     (fohHrs > 0 && netSales > 0)    ? money(netSales/fohHrs)    : '—');
-  set('sumSplhBoh',     (bohHrs > 0 && netSales > 0)    ? money(netSales/bohHrs)    : '—');
+  set('sumLaborPct',    (combinedNet > 0 && totalCost > 0) ? ((totalCost/combinedNet)*100).toFixed(1) + '%' : '—');
+  set('sumFohPct',      (combinedNet > 0 && fohCost > 0)   ? ((fohCost/combinedNet)*100).toFixed(1) + '%'   : '—');
+  set('sumBohPct',      (combinedNet > 0 && bohCost > 0)   ? ((bohCost/combinedNet)*100).toFixed(1) + '%'   : '—');
+  set('sumSplhTotal',   (totalHrs > 0 && combinedNet > 0)  ? money(combinedNet/totalHrs)  : '—');
+  set('sumSplhFoh',     (fohHrs > 0 && combinedNet > 0)    ? money(combinedNet/fohHrs)    : '—');
+  set('sumSplhBoh',     (bohHrs > 0 && combinedNet > 0)    ? money(combinedNet/bohHrs)    : '—');
   set('sumAvgCheck',    (guests > 0 && netSales > 0)    ? money(netSales/guests)    : '—');
   set('sumTotalHours',  totalHrs > 0 ? totalHrs.toFixed(1) + ' hrs' : '—');
   set('sumTotalGuests', guests > 0 ? String(Math.round(guests)) : '—');
