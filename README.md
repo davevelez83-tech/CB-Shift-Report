@@ -1,2 +1,1188 @@
-# CB-Shift-Report
-Cane &amp; Barrel Shift Report
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark">
+<title>Cane &amp; Barrel — Shift Report</title>
+<style>
+  :root {
+    --teal:      #1A96AA;
+    --teal-dk:   #147585;
+    --navy:      #1C3A5C;
+    --coral:     #D9756A;
+    --orange:    #E8963A;
+    --cream:     #F5F0E8;
+    --cream-dk:  #EBE4D6;
+    --border:    #C8BEA8;
+    --text:      #1C3A5C;
+    --muted:     #5E6E80;
+    --green:     #2E7D32;
+    --paper:     #FFFFFF;
+    --body-bg:   #F5F0E8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --teal:      #4FC3D5;
+      --teal-dk:   #6FD4E5;
+      --navy:      #0D1826;
+      --coral:     #E89289;
+      --orange:    #F0A85A;
+      --cream:     #263142;
+      --cream-dk:  #1F2937;
+      --border:    #3D4A5A;
+      --text:      #E4E8ED;
+      --muted:     #A0AEC0;
+      --green:     #66BB6A;
+      --paper:     #1C2634;
+      --body-bg:   #0F1620;
+    }
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    background: var(--body-bg);
+    color: var(--text);
+    padding: 28px 16px 60px;
+  }
+
+  table.report-table {
+    max-width: 680px;
+    width: 100%;
+    margin: 0 auto;
+    border-collapse: collapse;
+    background: var(--paper);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 6px 32px rgba(0,0,0,.18);
+  }
+
+  /* ── Header ── */
+  .rpt-header-cell {
+    background: var(--navy);
+    padding: 18px 20px 14px;
+  }
+  .rpt-header-inner { width: 100%; border-collapse: collapse; }
+  .rpt-header-inner td { padding: 0; border: none; vertical-align: top; }
+  .brand { font-family: 'Georgia', serif; font-size: 21px; font-weight: bold; letter-spacing: 2.5px; color: var(--teal); text-transform: uppercase; }
+  .sub   { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 10px; letter-spacing: 3px; color: var(--orange); text-transform: uppercase; margin-top: 3px; }
+  .d-date { font-family: 'Georgia', serif; font-size: 20px; font-weight: bold; color: #FFFFFF; letter-spacing: 1px; }
+  .d-day  { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 10px; letter-spacing: 3px; color: var(--teal); text-transform: uppercase; margin-top: 2px; }
+  .d-lastcall {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    color: rgba(255,255,255,.85); margin-top: 6px;
+  }
+  .d-lastcall .lc-label { color: var(--orange); font-weight: bold; }
+  .d-lastcall [contenteditable] {
+    display: inline-block;
+    width: auto;
+    min-width: 54px;
+    min-height: 0;
+    color: #FFFFFF;
+    font-weight: bold;
+    font-size: 11px;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    letter-spacing: 1px;
+    text-align: left;
+    padding: 1px 5px;
+    border-radius: 3px;
+    vertical-align: baseline;
+  }
+  .d-lastcall [contenteditable]:hover { background: rgba(255,255,255,.10); }
+  .d-lastcall [contenteditable]:focus { background: rgba(255,255,255,.18); outline: 1.5px solid var(--teal); }
+  .d-lastcall [contenteditable]:empty::before {
+    content: '—:— PM'; color: rgba(255,255,255,.45); font-weight: normal;
+    font-size: 11px; font-style: normal;
+  }
+
+  /* ── Accent bar (3-color table for Outlook) ── */
+  .accent-bar-cell { padding: 0; border: none; height: 4px; line-height: 4px; font-size: 0; }
+  .accent-bar-inner { width: 100%; border-collapse: collapse; }
+  .accent-bar-inner td { padding: 0; height: 4px; line-height: 4px; font-size: 0; border: none; }
+
+  /* ── Section header ── */
+  .sec-hd-cell {
+    background: var(--navy);
+    color: var(--teal);
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 10px;
+    font-weight: bold;
+    letter-spacing: 3.5px;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border: none;
+  }
+
+  .section-wrap { padding: 0; border: none; }
+
+  /* ── Weather summary band (inside Weather section, above grid) ── */
+  .wx-summary-row td {
+    background: var(--cream);
+    padding: 10px 14px;
+    text-align: center;
+    border: 1px solid var(--border);
+    font-family: 'Georgia', serif;
+    font-size: 16px;
+    color: var(--text);
+    letter-spacing: .5px;
+  }
+  .wx-summary-temp { font-weight: bold; font-size: 18px; color: var(--teal-dk); }
+  .wx-summary-sep { color: var(--muted); margin: 0 8px; }
+  .wx-summary-cond { font-weight: bold; }
+
+  /* ── Inner data tables ── */
+  table.data-table { width: 100%; border-collapse: collapse; background: var(--paper); }
+  table.data-table td { border: 1px solid var(--border); padding: 7px 10px; vertical-align: middle; color: var(--text); }
+
+  .lbl {
+    background: var(--cream);
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 9.5px; font-weight: bold;
+    letter-spacing: 1.8px; text-transform: uppercase;
+    color: var(--text); text-align: right;
+    padding-right: 11px; white-space: nowrap; width: 1%;
+  }
+  .val { font-size: 15px; color: var(--text); background: var(--paper); }
+
+  [contenteditable="true"] {
+    display: inline-block; width: 100%;
+    min-height: 20px; outline: none;
+    border-radius: 3px; transition: background .12s; cursor: text;
+    color: var(--text); font-size: 15px;
+  }
+  [contenteditable="true"]:hover  { background: rgba(26,150,170,.12); }
+  [contenteditable="true"]:focus  { background: rgba(26,150,170,.18); outline: 1.5px solid var(--teal); }
+  [contenteditable][data-ph]:empty::before {
+    content: attr(data-ph); color: var(--muted);
+    font-style: italic; pointer-events: none; opacity: .7;
+    font-size: 14px;
+  }
+
+  /* ── Weather forecast grid ── */
+  .wx-forecast { border-collapse: collapse; width: 100%; background: transparent; table-layout: fixed; }
+  .wx-forecast td { border: 1px solid var(--border); padding: 4px 2px; text-align: center; vertical-align: middle; }
+  .wx-forecast .wx-time {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-weight: bold; letter-spacing: 1px;
+    color: var(--text); background: var(--cream);
+    font-size: 9px; text-transform: uppercase; padding: 3px 1px;
+  }
+  .wx-cond { font-family: 'Helvetica Neue', Arial, sans-serif; font-weight: bold; font-size: 11px; letter-spacing: .3px; }
+  .wx-temp { font-family: 'Georgia', serif; font-weight: bold; font-size: 14px; color: var(--text); }
+  .wx-c-pleasant { color: #147585; } .wx-c-warm     { color: #C57830; }
+  .wx-c-hot      { color: #C0392B; } .wx-c-humid    { color: #7B5EA7; }
+  .wx-c-windy    { color: #5D7B9A; } .wx-c-rainy    { color: #3F6E96; }
+  .wx-c-stormy   { color: #2C3E50; } .wx-c-overcast { color: #6F7E8C; }
+  .wx-c-cool     { color: #4A8A8C; } .wx-c-foggy    { color: #7A8894; }
+  @media (prefers-color-scheme: dark) {
+    .wx-c-pleasant { color: #6FD4E5; } .wx-c-warm     { color: #F0A85A; }
+    .wx-c-hot      { color: #FF6B60; } .wx-c-humid    { color: #B09BD8; }
+    .wx-c-windy    { color: #9DB4CC; } .wx-c-rainy    { color: #7FA8CE; }
+    .wx-c-stormy   { color: #A8B5C4; } .wx-c-overcast { color: #A8B3BF; }
+    .wx-c-cool     { color: #8FC9CB; } .wx-c-foggy    { color: #B0BDC8; }
+  }
+
+  .comps-val [contenteditable] { font-weight: bold; color: var(--coral); }
+
+  /* ── Net Sales highlight ── */
+  #netSales {
+    font-size: 15px;
+    font-weight: bold;
+    color: var(--green);
+  }
+  @media (prefers-color-scheme: dark) {
+    #netSales { color: var(--green); }
+  }
+
+  /* ── Same Date LY (year-over-year) ── */
+  .val-half { width: 13%; }
+  #lySales { width: auto; min-width: 62px; }
+  .ly-var {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px; font-weight: bold;
+    letter-spacing: .5px; margin-left: 7px; white-space: nowrap;
+  }
+  .ly-var-up   { color: var(--green); }
+  .ly-var-down { color: var(--coral); }
+  .ly-var-flat { color: var(--muted); }
+
+  /* ── Food / Bar sales mix ── */
+  #foodSales, #barSales { width: auto; min-width: 62px; }
+  .mix-pct {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px; font-weight: bold;
+    letter-spacing: .5px; margin-left: 7px; white-space: nowrap;
+    color: var(--teal-dk);
+  }
+
+  /* ── Staffing (uniform 3-column, no spans) ── */
+  .role-lbl {
+    background: var(--cream-dk);
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 9.5px; font-weight: bold;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--teal-dk); text-align: right;
+    padding: 6px 11px 6px 6px; width: 120px; vertical-align: middle;
+  }
+  .mgr-row td { background: rgba(28,58,92,.08); }
+  @media (prefers-color-scheme: dark) {
+    .mgr-row td { background: rgba(79,195,213,.08); }
+  }
+  .name-val {
+    font-size: 15px;
+    padding: 6px 10px;
+    text-align: center;
+    width: 50%;
+  }
+  .name-val [contenteditable] { text-align: center; }
+
+  /* ── Labor tables ── */
+  /* Compact: tighter padding/height than standard data rows, scoped to labor tables only */
+  table.labor-table td { padding: 3px 8px; }
+  table.labor-table .role-lbl { padding: 3px 9px 3px 6px; font-size: 9px; letter-spacing: 1.2px; }
+  table.labor-table .name-val { padding: 3px 8px; font-size: 14px; }
+  table.labor-table .name-val [contenteditable] { min-height: 16px; }
+  table.labor-table .hrs-val [contenteditable] { min-height: 16px; }
+  table.labor-table .labor-head td { padding: 4px 8px; }
+  .labor-head td {
+    background: var(--navy);
+    color: var(--teal);
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 9px; font-weight: bold;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 5px 10px; text-align: center;
+  }
+  .labor-head .lh-pos  { text-align: right; width: 130px; }
+  .labor-head .lh-name { text-align: center; }
+  .labor-head .lh-hrs  { text-align: center; width: 80px; }
+  .hrs-val { text-align: center; width: 80px; }
+  .hrs-val [contenteditable] { text-align: center; }
+  .hrs-input { font-variant-numeric: tabular-nums; }
+  .labor-total-row td {
+    background: var(--cream-dk);
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-weight: bold;
+  }
+  .labor-metric {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 14px; font-weight: bold;
+    color: var(--teal-dk); text-align: left;
+    font-variant-numeric: tabular-nums;
+  }
+  @media (prefers-color-scheme: dark) {
+    .labor-metric { color: var(--teal-dk); }
+  }
+
+  /* ── Notes ── */
+  .note-lbl {
+    background: var(--cream);
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 9.5px; font-weight: bold;
+    letter-spacing: 1.8px; text-transform: uppercase;
+    color: var(--text); text-align: right;
+    padding: 10px 11px 9px 6px; width: 120px;
+    vertical-align: top;
+  }
+  .note-val { font-size: 14px; vertical-align: top; color: var(--text); }
+  .note-val [contenteditable] { min-height: 44px; line-height: 1.55; display: block; width: 100%; font-size: 14px; text-align: left; }
+
+  /* ── Action bar ── */
+  .action-bar {
+    max-width: 680px; margin: 14px auto 0;
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+  .btn {
+    padding: 9px 20px; border: none; border-radius: 6px;
+    cursor: pointer; font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px; font-weight: bold;
+    letter-spacing: 1.2px; text-transform: uppercase;
+    transition: background .18s, transform .1s;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn-copy  { background: var(--teal);   color: #FFFFFF; }
+  .btn-copy:hover  { background: var(--teal-dk); }
+  .btn-wx    { background: var(--orange); color: #FFFFFF; }
+  .btn-wx:hover    { background: #C57830; }
+  .btn-clear { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+  .btn-clear:hover { color: var(--coral); border-color: var(--coral); }
+  .wx-status { font-size: 11px; color: var(--muted); font-family: 'Helvetica Neue', Arial, sans-serif; }
+
+  @media print {
+    .action-bar { display: none; }
+    body { background: #FFFFFF; padding: 0; }
+    table.report-table { box-shadow: none; border-radius: 0; }
+  }
+</style>
+</head>
+<body>
+
+<table class="report-table" id="reportRoot" cellpadding="0" cellspacing="0" border="0">
+
+  <!-- HEADER -->
+  <tr>
+    <td class="rpt-header-cell">
+      <table class="rpt-header-inner" cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr>
+          <td align="left" valign="top">
+            <div class="brand">Cane &amp; Barrel</div>
+            <div class="sub">Shift Report &nbsp;·&nbsp; AC Hotel St. Petersburg</div>
+          </td>
+          <td align="right" valign="top" style="white-space:nowrap;">
+            <div class="d-date" id="dispDate"></div>
+            <div class="d-day"  id="dispDay"></div>
+            <div class="d-lastcall">
+              <span class="lc-label">Last Call</span>
+              <span contenteditable="true" data-time="1" id="lastCallField"></span>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- ACCENT BAR -->
+  <tr>
+    <td class="accent-bar-cell">
+      <table class="accent-bar-inner" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td width="33%" style="background:#1A96AA;" bgcolor="#1A96AA">&nbsp;</td>
+          <td width="34%" style="background:#E8963A;" bgcolor="#E8963A">&nbsp;</td>
+          <td width="33%" style="background:#D9756A;" bgcolor="#D9756A">&nbsp;</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- ══════════ WEATHER ══════════ -->
+  <tr><td class="sec-hd-cell">Weather</td></tr>
+  <tr>
+    <td class="section-wrap">
+      <table class="data-table" cellpadding="0" cellspacing="0" border="0">
+        <!-- Daily summary band -->
+        <tr class="wx-summary-row">
+          <td id="wxSummary">
+            <span class="wx-summary-temp" id="wxSummaryTemp">—</span>
+            <span class="wx-summary-sep">·</span>
+            <span class="wx-summary-cond" id="wxSummaryCond">—</span>
+            <span class="wx-summary-sep">·</span>
+            <span id="wxSummaryWind">— mph</span>
+          </td>
+        </tr>
+        <!-- Hourly grid -->
+        <tr>
+          <td style="padding:4px 6px;">
+            <table class="wx-forecast" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td class="wx-time">9 AM</td>
+                <td class="wx-time">12 PM</td>
+                <td class="wx-time">3 PM</td>
+                <td class="wx-time">6 PM</td>
+                <td class="wx-time">9 PM</td>
+                <td class="wx-time">12 AM</td>
+              </tr>
+              <tr>
+                <td><span class="wx-cond" id="wx-cond-0900">—</span></td>
+                <td><span class="wx-cond" id="wx-cond-1200">—</span></td>
+                <td><span class="wx-cond" id="wx-cond-1500">—</span></td>
+                <td><span class="wx-cond" id="wx-cond-1800">—</span></td>
+                <td><span class="wx-cond" id="wx-cond-2100">—</span></td>
+                <td><span class="wx-cond" id="wx-cond-2400">—</span></td>
+              </tr>
+              <tr>
+                <td class="wx-temp" id="wx-temp-0900">—</td>
+                <td class="wx-temp" id="wx-temp-1200">—</td>
+                <td class="wx-temp" id="wx-temp-1500">—</td>
+                <td class="wx-temp" id="wx-temp-1800">—</td>
+                <td class="wx-temp" id="wx-temp-2100">—</td>
+                <td class="wx-temp" id="wx-temp-2400">—</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- ══════════ OVERVIEW ══════════ -->
+  <tr><td class="sec-hd-cell">Cane &amp; Barrel Overview</td></tr>
+  <tr>
+    <td class="section-wrap">
+      <table class="data-table" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td class="lbl">Hotel Occ.</td>
+          <td class="val" colspan="3"><span contenteditable="true" data-ph="0%" data-percent="1"></span></td>
+          <td class="lbl">Res / Covers</td>
+          <td class="val val-half"><span contenteditable="true" data-ph="0 / 0" data-reservations="1"></span></td>
+          <td class="lbl">Final Count</td>
+          <td class="val val-half"><span contenteditable="true" id="finalCount" data-ph="—"></span></td>
+        </tr>
+        <tr>
+          <td class="lbl">Net Sales</td>
+          <td class="val" colspan="3"><span contenteditable="true" id="netSales" data-ph="$0.00" data-currency="1"></span><span class="ly-var" id="lyVariance"></span></td>
+          <td class="lbl">Comps</td>
+          <td class="val comps-val" colspan="3"><span contenteditable="true" data-ph="$0.00" data-currency="1"></span></td>
+        </tr>
+        <tr>
+          <td class="lbl">Food Sales</td>
+          <td class="val" colspan="3"><span contenteditable="true" id="foodSales" data-ph="$0.00" data-currency="1"></span><span class="mix-pct" id="foodPct"></span></td>
+          <td class="lbl">Bar Sales</td>
+          <td class="val" colspan="3"><span contenteditable="true" id="barSales" data-ph="$0.00" data-currency="1"></span><span class="mix-pct" id="barPct"></span></td>
+        </tr>
+        <tr>
+          <td class="lbl">Same Date LY</td>
+          <td class="val" colspan="3"><span contenteditable="true" id="lySales" data-ph="$0.00" data-currency="1"></span></td>
+          <td class="lbl">Prior Week</td>
+          <td class="val" colspan="3"><span contenteditable="true" data-ph="$0.00" data-currency="1"></span></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- ══════════ BREAKFAST / AC LOUNGE OVERVIEW ══════════ -->
+  <tr><td class="sec-hd-cell">Breakfast / AC Lounge Overview</td></tr>
+  <tr>
+    <td class="section-wrap">
+      <table class="data-table" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td class="lbl">AC Net Sales</td>
+          <td class="val" colspan="3"><span contenteditable="true" id="acNetSales" data-ph="$0.00" data-currency="1"></span><span class="ly-var" id="acLyVariance"></span></td>
+          <td class="lbl">Same Date LY</td>
+          <td class="val" colspan="3"><span contenteditable="true" id="acLySales" data-ph="$0.00" data-currency="1"></span></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- ══════════ LABOR SUMMARY (calculated; no individual rates) ══════════ -->
+  <tr><td class="sec-hd-cell">Labor Summary</td></tr>
+  <tr>
+    <td class="section-wrap">
+      <table class="data-table" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td class="lbl">Total Labor</td>
+          <td class="val labor-metric" colspan="3"><span id="sumTotalLabor">—</span></td>
+          <td class="lbl">Labor % (Total)</td>
+          <td class="val labor-metric" colspan="3"><span id="sumLaborPct">—</span></td>
+        </tr>
+        <tr>
+          <td class="lbl">FOH Labor %</td>
+          <td class="val labor-metric" colspan="3"><span id="sumFohPct">—</span></td>
+          <td class="lbl">BOH Labor %</td>
+          <td class="val labor-metric" colspan="3"><span id="sumBohPct">—</span></td>
+        </tr>
+        <tr>
+          <td class="lbl">SPLH (Total)</td>
+          <td class="val labor-metric" colspan="3"><span id="sumSplhTotal">—</span></td>
+          <td class="lbl">Avg Check (PPA)</td>
+          <td class="val labor-metric" colspan="3"><span id="sumAvgCheck">—</span></td>
+        </tr>
+        <tr>
+          <td class="lbl">SPLH (FOH)</td>
+          <td class="val labor-metric" colspan="3"><span id="sumSplhFoh">—</span></td>
+          <td class="lbl">SPLH (BOH)</td>
+          <td class="val labor-metric" colspan="3"><span id="sumSplhBoh">—</span></td>
+        </tr>
+        <tr>
+          <td class="lbl">Total Hours</td>
+          <td class="val labor-metric" colspan="3"><span id="sumTotalHours">—</span></td>
+          <td class="lbl">Total Guests</td>
+          <td class="val labor-metric" colspan="3"><span id="sumTotalGuests">—</span></td>
+        </tr>
+        <tr>
+          <td colspan="8" style="background:var(--cream); padding:6px 10px; border:1px solid var(--border); font-family:'Helvetica Neue',Arial,sans-serif; font-size:9px; line-height:1.5; color:var(--muted); font-style:italic; text-align:left; letter-spacing:.2px;">
+            Labor&nbsp;%&nbsp;and SPLH are calculated on combined Cane&nbsp;&amp;&nbsp;Barrel&nbsp;+&nbsp;AC&nbsp;Lounge net sales. Avg&nbsp;Check&nbsp;(PPA) uses Cane&nbsp;&amp;&nbsp;Barrel net sales only and Final Count (C&amp;B covers). Hours and wages are estimates, not exact payroll figures; manager hours are excluded from labor cost. Figures for management review only.
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- ══════════ LABOR DETAIL — FRONT OF HOUSE ══════════ -->
+  <tr><td class="sec-hd-cell">Labor Detail · Front of House</td></tr>
+  <tr>
+    <td class="section-wrap">
+      <table class="data-table labor-table" cellpadding="0" cellspacing="0" border="0">
+        <tr class="labor-head">
+          <td class="lh-pos">Position</td>
+          <td class="lh-name">Name</td>
+          <td class="lh-hrs">Hours</td>
+        </tr>
+        <tr class="mgr-row labor-row" data-rate-key="manager">
+          <td class="role-lbl" style="color:var(--text);">Manager</td>
+          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-row" data-rate-key="supervisor">
+          <td class="role-lbl">Supervisor</td>
+          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-row" data-rate-key="host">
+          <td class="role-lbl">Host</td>
+          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-row" data-rate-key="barback">
+          <td class="role-lbl">Bar Back</td>
+          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-row" data-rate-key="bartender">
+          <td class="role-lbl">Bartender</td>
+          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-row" data-rate-key="bartender">
+          <td class="role-lbl">Bartender</td>
+          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-row" data-rate-key="bartender">
+          <td class="role-lbl">Bartender</td>
+          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-row" data-rate-key="bartender">
+          <td class="role-lbl">Bartender</td>
+          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-row" data-rate-key="bartender">
+          <td class="role-lbl">Bartender</td>
+          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-row" data-rate-key="bartender">
+          <td class="role-lbl">Bartender</td>
+          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-row" data-rate-key="server">
+          <td class="role-lbl">Server</td>
+          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-row" data-rate-key="server">
+          <td class="role-lbl">Server</td>
+          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-row" data-rate-key="server">
+          <td class="role-lbl">Server</td>
+          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-row" data-rate-key="server">
+          <td class="role-lbl">Server</td>
+          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-row" data-rate-key="server">
+          <td class="role-lbl">Server</td>
+          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-row" data-rate-key="server">
+          <td class="role-lbl">Server</td>
+          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-row" data-rate-key="support">
+          <td class="role-lbl">Support</td>
+          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-row" data-rate-key="support">
+          <td class="role-lbl">Support</td>
+          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-row" data-rate-key="acbartender">
+          <td class="role-lbl">AC Bartender</td>
+          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-row" data-rate-key="acserver">
+          <td class="role-lbl">AC Server</td>
+          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-total-row">
+          <td class="role-lbl" style="color:var(--text);">Total FOH</td>
+          <td class="val labor-metric" style="text-align:center;"><span id="fohHours">— hrs</span></td>
+          <td class="val labor-metric" style="text-align:center;"><span id="fohCost">—</span></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- ══════════ LABOR DETAIL — BACK OF HOUSE ══════════ -->
+  <tr><td class="sec-hd-cell">Labor Detail · Back of House</td></tr>
+  <tr>
+    <td class="section-wrap">
+      <table class="data-table labor-table" cellpadding="0" cellspacing="0" border="0">
+        <tr class="labor-head">
+          <td class="lh-pos">Position</td>
+          <td class="lh-name">Name</td>
+          <td class="lh-hrs">Hours</td>
+        </tr>
+        <tr class="labor-row" data-rate-key="linecook">
+          <td class="role-lbl">Line Cook</td>
+          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-row" data-rate-key="linecook">
+          <td class="role-lbl">Line Cook</td>
+          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-row" data-rate-key="tempchriss">
+          <td class="role-lbl">Temp Chriss</td>
+          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-row" data-rate-key="tempfrei">
+          <td class="role-lbl">Temp Frei</td>
+          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-row" data-rate-key="dishwasher">
+          <td class="role-lbl">Dishwasher</td>
+          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-row" data-rate-key="steward">
+          <td class="role-lbl">Steward</td>
+          <td class="val name-val"><span contenteditable="true" data-ph="Name"></span></td>
+          <td class="val hrs-val"><span contenteditable="true" class="hrs-input" data-ph="0.0"></span></td>
+        </tr>
+        <tr class="labor-total-row">
+          <td class="role-lbl" style="color:var(--text);">Total BOH</td>
+          <td class="val labor-metric" style="text-align:center;"><span id="bohHours">— hrs</span></td>
+          <td class="val labor-metric" style="text-align:center;"><span id="bohCost">—</span></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- ══════════ NOTES ══════════ -->
+  <tr><td class="sec-hd-cell">Notes</td></tr>
+  <tr>
+    <td class="section-wrap">
+      <table class="data-table" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td class="note-lbl">Guest Feedback</td>
+          <td class="note-val"><span contenteditable="true" id="note-guest"   data-ph="Guest feedback…"></span></td>
+        </tr>
+        <tr>
+          <td class="note-lbl">Service</td>
+          <td class="note-val"><span contenteditable="true" id="note-service" data-ph="Service notes…"></span></td>
+        </tr>
+        <tr>
+          <td class="note-lbl">Maintenance</td>
+          <td class="note-val"><span contenteditable="true" id="note-maint"   data-ph="Maintenance issues…"></span></td>
+        </tr>
+        <tr>
+          <td class="note-lbl">Pass Along</td>
+          <td class="note-val"><span contenteditable="true" id="note-pass"    data-ph="General pass along…"></span></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- Closing accent bar -->
+  <tr>
+    <td class="accent-bar-cell">
+      <table class="accent-bar-inner" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td width="33%" style="background:#1A96AA;" bgcolor="#1A96AA">&nbsp;</td>
+          <td width="34%" style="background:#E8963A;" bgcolor="#E8963A">&nbsp;</td>
+          <td width="33%" style="background:#D9756A;" bgcolor="#D9756A">&nbsp;</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+</table>
+
+<div class="action-bar">
+  <button class="btn btn-copy"  onclick="copyReport()">📋 Copy Report</button>
+  <button class="btn btn-wx"    onclick="fetchWeather()">🌤 Refresh Weather</button>
+  <button class="btn btn-clear" onclick="clearReport()">↺ Clear Fields</button>
+  <span class="wx-status" id="wxStatus"></span>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+//  DATE — shift-night logic (before 5am = yesterday)
+// ══════════════════════════════════════════
+const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+function getShiftDate() {
+  const d = new Date();
+  if (d.getHours() < 5) d.setDate(d.getDate() - 1);
+  return d;
+}
+const sd = getShiftDate();
+document.getElementById('dispDate').textContent =
+  (sd.getMonth()+1) + '/' + sd.getDate() + '/' + String(sd.getFullYear()).slice(2);
+document.getElementById('dispDay').textContent = DAYS[sd.getDay()];
+
+
+// ══════════════════════════════════════════
+//  WEATHER — hourly + daily summary, downtown St. Pete
+// ══════════════════════════════════════════
+function wmoToCondition(code, windMph, tempF, humidity) {
+  code = parseInt(code); windMph = parseFloat(windMph) || 0;
+  tempF = parseFloat(tempF) || 0; humidity = parseFloat(humidity) || 0;
+  if (code >= 95)                     return { label: 'Storms',   cls: 'stormy'   };
+  if (code >= 80)                     return { label: 'Showers',  cls: 'rainy'    };
+  if (code >= 71)                     return { label: 'Snow',     cls: 'cool'     };
+  if (code >= 61)                     return { label: 'Rain',     cls: 'rainy'    };
+  if (code >= 51)                     return { label: 'Drizzle',  cls: 'rainy'    };
+  if (code === 45 || code === 48)     return { label: 'Fog',      cls: 'foggy'    };
+  if (windMph > 18)                   return { label: 'Windy',    cls: 'windy'    };
+  if (code === 3)                     return { label: 'Overcast', cls: 'overcast' };
+  if (code === 2)                     return { label: 'Cloudy',   cls: 'overcast' };
+  if (tempF >= 92 && humidity >= 70)  return { label: 'Hot',      cls: 'hot'      };
+  if (tempF >= 88)                    return { label: 'Warm',     cls: 'warm'     };
+  if (tempF <= 62)                    return { label: 'Cool',     cls: 'cool'     };
+  if (humidity >= 80)                 return { label: 'Humid',    cls: 'humid'    };
+  return                                     { label: 'Clear',    cls: 'pleasant' };
+}
+function ymd(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const dd = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${dd}`;
+}
+async function fetchWeather() {
+  const status = document.getElementById('wxStatus');
+  status.textContent = 'Fetching forecast…';
+  const shift = getShiftDate();
+  const nextDay = new Date(shift); nextDay.setDate(nextDay.getDate() + 1);
+  const dateStr = ymd(shift);
+  const nextStr = ymd(nextDay);
+  try {
+    const url = 'https://api.open-meteo.com/v1/forecast' +
+      '?latitude=27.7706&longitude=-82.6363' +
+      '&hourly=temperature_2m,weathercode,windspeed_10m,relative_humidity_2m' +
+      '&daily=weathercode,temperature_2m_max,temperature_2m_min,windspeed_10m_max' +
+      '&temperature_unit=fahrenheit&windspeed_unit=mph' +
+      '&timezone=America%2FNew_York' +
+      `&start_date=${dateStr}&end_date=${nextStr}`;
+    const r = await fetch(url);
+    const data = await r.json();
+    if (!data.hourly || !data.hourly.time) throw new Error('no data');
+
+    // Hourly slots
+    const slots = [
+      { id: '0900', time: `${dateStr}T09:00` },
+      { id: '1200', time: `${dateStr}T12:00` },
+      { id: '1500', time: `${dateStr}T15:00` },
+      { id: '1800', time: `${dateStr}T18:00` },
+      { id: '2100', time: `${dateStr}T21:00` },
+      { id: '2400', time: `${nextStr}T00:00` },
+    ];
+    slots.forEach(slot => {
+      const idx = data.hourly.time.indexOf(slot.time);
+      if (idx === -1) return;
+      const temp = Math.round(data.hourly.temperature_2m[idx]);
+      const code = data.hourly.weathercode[idx];
+      const wind = data.hourly.windspeed_10m[idx];
+      const hum  = data.hourly.relative_humidity_2m[idx];
+      const cond = wmoToCondition(code, wind, temp, hum);
+      const condEl = document.getElementById('wx-cond-' + slot.id);
+      const tempEl = document.getElementById('wx-temp-' + slot.id);
+      if (condEl) { condEl.textContent = cond.label; condEl.className = 'wx-cond wx-c-' + cond.cls; }
+      if (tempEl) tempEl.textContent = temp + '°';
+    });
+
+    // Daily summary — use first day (shift date)
+    if (data.daily && data.daily.time && data.daily.time.length > 0) {
+      const di = data.daily.time.indexOf(dateStr);
+      if (di !== -1) {
+        const hi   = Math.round(data.daily.temperature_2m_max[di]);
+        const lo   = Math.round(data.daily.temperature_2m_min[di]);
+        const wind = Math.round(data.daily.windspeed_10m_max[di]);
+        const code = data.daily.weathercode[di];
+        const cond = wmoToCondition(code, wind, hi, 50);
+        document.getElementById('wxSummaryTemp').textContent = `${hi}°`;
+        document.getElementById('wxSummaryCond').textContent = cond.label;
+        document.getElementById('wxSummaryCond').className   = 'wx-summary-cond wx-c-' + cond.cls;
+        document.getElementById('wxSummaryWind').textContent = `${wind} mph`;
+      }
+    }
+
+    status.textContent = 'Updated ✓';
+    setTimeout(() => status.textContent = '', 3000);
+  } catch(e) {
+    status.textContent = 'Weather unavailable — enter manually';
+  }
+}
+fetchWeather();
+
+
+// ══════════════════════════════════════════
+//  FORMAT ENFORCERS
+// ══════════════════════════════════════════
+function formatCurrency(el) {
+  const raw = (el.textContent || '').trim();
+  if (!raw) { el.textContent = ''; return; }
+  const num = parseFloat(raw.replace(/[^0-9.\-]/g, ''));
+  if (isNaN(num)) return;
+  el.textContent = '$' + num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function formatPercent(el) {
+  const raw = (el.textContent || '').trim();
+  if (!raw) { el.textContent = ''; return; }
+  const num = parseFloat(raw.replace(/[^0-9.\-]/g, ''));
+  if (isNaN(num)) return;
+  const pct = (num > 0 && num <= 1) ? Math.round(num * 100) : Math.round(num);
+  el.textContent = pct + '%';
+}
+function formatReservations(el) {
+  const raw = (el.textContent || '').trim();
+  if (!raw) { el.textContent = ''; return; }
+  const nums = raw.match(/\d+/g);
+  if (!nums || nums.length < 2) return;
+  el.textContent = `${nums[0]} / ${nums[1]}`;
+}
+function formatTime(el) {
+  const raw = (el.textContent || '').trim();
+  if (!raw) { el.textContent = ''; return; }
+  const lower = raw.toLowerCase();
+  const hasPm = /p\.?m?\.?|p\b/i.test(lower);
+  const hasAm = /a\.?m?\.?|a\b/i.test(lower);
+  const digits = lower.replace(/[^0-9]/g, '');
+  if (!digits) return;
+  let hours, minutes;
+  if (digits.length === 1 || digits.length === 2) { hours = parseInt(digits); minutes = 0; }
+  else if (digits.length === 3) { hours = parseInt(digits.slice(0, 1)); minutes = parseInt(digits.slice(1)); }
+  else if (digits.length === 4) { hours = parseInt(digits.slice(0, 2)); minutes = parseInt(digits.slice(2)); }
+  else return;
+  if (hours > 23 || minutes > 59) return;
+  let period;
+  if (hasPm) period = 'PM';
+  else if (hasAm) period = 'AM';
+  else if (hours >= 13) period = 'PM';
+  else if (hours === 12) period = 'PM';
+  else if (hours === 0) period = 'AM';
+  else if (hours >= 1 && hours <= 5) period = 'AM';
+  else period = 'PM';
+  let h = hours;
+  if (h === 0) h = 12;
+  else if (h > 12) h = h - 12;
+  el.textContent = `${h}:${String(minutes).padStart(2,'0')} ${period}`;
+}
+function attachFormatter(selector, fn) {
+  document.querySelectorAll(selector).forEach(el => {
+    el.addEventListener('blur', () => fn(el));
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); el.blur(); }
+    });
+  });
+}
+attachFormatter('[data-currency="1"]',     formatCurrency);
+attachFormatter('[data-percent="1"]',      formatPercent);
+attachFormatter('[data-reservations="1"]', formatReservations);
+attachFormatter('[data-time="1"]',         formatTime);
+
+
+// ══════════════════════════════════════════
+//  SAME DATE LY — year-over-year variance
+// ══════════════════════════════════════════
+function computeVariance(netId, lyId, varId) {
+  const netEl = document.getElementById(netId);
+  const lyEl  = document.getElementById(lyId);
+  const varEl = document.getElementById(varId);
+  if (!lyEl || !netEl || !varEl) return;
+  const ly  = parseFloat((lyEl.textContent  || '').replace(/[^0-9.\-]/g, ''));
+  const net = parseFloat((netEl.textContent || '').replace(/[^0-9.\-]/g, ''));
+  if (isNaN(ly) || isNaN(net) || ly === 0) {
+    varEl.textContent = '';
+    varEl.className = 'ly-var';
+    return;
+  }
+  const pct  = ((net - ly) / Math.abs(ly)) * 100;
+  const up   = pct > 0.05, down = pct < -0.05;
+  varEl.textContent = (up ? '▲ ' : down ? '▼ ' : '± ') + Math.abs(pct).toFixed(1) + '%';
+  varEl.className   = 'ly-var ' + (up ? 'ly-var-up' : down ? 'ly-var-down' : 'ly-var-flat');
+}
+// C&B badge: C&B Net vs C&B LY.  AC badge: AC Net vs AC LY.  Kept fully separate.
+function recalcLyVariance() {
+  computeVariance('netSales',   'lySales',   'lyVariance');
+  computeVariance('acNetSales', 'acLySales', 'acLyVariance');
+}
+['lySales','netSales','acNetSales','acLySales'].forEach(function(id) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.addEventListener('blur',  recalcLyVariance);
+    el.addEventListener('input', recalcLyVariance);
+  }
+});
+// AC Net Sales also feeds the labor denominators
+(function() {
+  const acEl = document.getElementById('acNetSales');
+  if (acEl) {
+    acEl.addEventListener('blur',  recalcLabor);
+    acEl.addEventListener('input', recalcLabor);
+  }
+})();
+
+
+// ══════════════════════════════════════════
+//  SALES MIX — Food / Bar (Bar = Net − Food, editable override)
+// ══════════════════════════════════════════
+let barManual = false;
+function recalcSalesMix() {
+  const netEl  = document.getElementById('netSales');
+  const foodEl = document.getElementById('foodSales');
+  const barEl  = document.getElementById('barSales');
+  if (!netEl || !foodEl || !barEl) return;
+  const net  = num(netEl);
+  const food = num(foodEl);
+  const foodFilled = (foodEl.textContent || '').trim() !== '';
+  if (!barManual && net > 0 && foodFilled) {
+    barEl.textContent = money(net - food);
+  } else if (!barManual && !foodFilled) {
+    barEl.textContent = '';
+  }
+  const bar = num(barEl);
+  const setPct = (id, v, filled) => {
+    const e = document.getElementById(id);
+    if (!e) return;
+    e.textContent = (net > 0 && filled) ? ((v / net) * 100).toFixed(1) + '%' : '';
+  };
+  setPct('foodPct', food, foodFilled);
+  setPct('barPct',  bar,  (barEl.textContent || '').trim() !== '');
+}
+(function() {
+  const foodEl = document.getElementById('foodSales');
+  const barEl  = document.getElementById('barSales');
+  const netEl  = document.getElementById('netSales');
+  if (foodEl) foodEl.addEventListener('blur', recalcSalesMix);
+  if (netEl)  netEl.addEventListener('blur', recalcSalesMix);
+  if (barEl) {
+    barEl.addEventListener('input', () => { barManual = true; });
+    barEl.addEventListener('blur', () => {
+      if ((barEl.textContent || '').trim() === '') barManual = false;
+      recalcSalesMix();
+    });
+  }
+})();
+
+
+// ══════════════════════════════════════════
+//  LABOR ENGINE — baked-in rate table (rates never displayed)
+//  Update a rate here when you learn it. null = unknown (row skipped).
+// ══════════════════════════════════════════
+const PAY_RATES = {
+  manager:        null,   // excluded from labor cost
+  supervisor:     22.00,
+  host:           16.00,
+  barback:        12.36,
+  bartender:      10.98,  // FL tipped cash wage (before tips)
+  server:         10.98,  // FL tipped cash wage (before tips)
+  support:        15.00,
+  linecook:       20.00,
+  tempchriss:     20.00,
+  tempfrei:       19.00,
+  dishwasher:     15.00,  // Matt
+  steward:        16.39,   // Glenn
+  acbartender:    11.00,  // AC Lounge bartender
+  acserver:       15.00    // AC Lounge server
+};
+const FOH_KEYS = ['manager','supervisor','host','barback','bartender','server','support','acbartender','acserver'];
+
+function num(el) {
+  if (!el) return 0;
+  const v = parseFloat((el.textContent || '').replace(/[^0-9.\-]/g, ''));
+  return isNaN(v) ? 0 : v;
+}
+function money(n) {
+  return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function recalcLabor() {
+  let fohCost = 0, bohCost = 0, fohHrs = 0, bohHrs = 0;
+
+  document.querySelectorAll('.labor-row').forEach(row => {
+    const key  = row.getAttribute('data-rate-key');
+    const hrsEl = row.querySelector('.hrs-input');
+    const hrs  = num(hrsEl);
+    if (hrs <= 0) return;
+    const rate = PAY_RATES[key];
+    const isFoh = FOH_KEYS.includes(key);
+    if (isFoh) fohHrs += hrs; else bohHrs += hrs;
+    if (rate != null) {
+      const cost = hrs * rate;
+      if (isFoh) fohCost += cost; else bohCost += cost;
+    }
+  });
+
+  const totalCost  = fohCost + bohCost;
+  const totalHrs   = fohHrs + bohHrs;
+  const netSales   = num(document.getElementById('netSales'));      // C&B only
+  const acNet      = num(document.getElementById('acNetSales'));    // AC Lounge only
+  const combinedNet = netSales + acNet;                            // labor % / SPLH denominator
+  const guests     = num(document.getElementById('finalCount'));
+
+  // Per-table totals
+  document.getElementById('fohHours').textContent = fohHrs > 0 ? fohHrs.toFixed(1) + ' hrs' : '— hrs';
+  document.getElementById('bohHours').textContent = bohHrs > 0 ? bohHrs.toFixed(1) + ' hrs' : '— hrs';
+  document.getElementById('fohCost').textContent  = fohCost > 0 ? money(fohCost) : '—';
+  document.getElementById('bohCost').textContent  = bohCost > 0 ? money(bohCost) : '—';
+
+  // Summary block
+  // Labor % and SPLH divide by COMBINED net (C&B + AC). PPA stays on C&B net only.
+  const set = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
+  set('sumTotalLabor',  totalCost > 0 ? money(totalCost) : '—');
+  set('sumLaborPct',    (combinedNet > 0 && totalCost > 0) ? ((totalCost/combinedNet)*100).toFixed(1) + '%' : '—');
+  set('sumFohPct',      (combinedNet > 0 && fohCost > 0)   ? ((fohCost/combinedNet)*100).toFixed(1) + '%'   : '—');
+  set('sumBohPct',      (combinedNet > 0 && bohCost > 0)   ? ((bohCost/combinedNet)*100).toFixed(1) + '%'   : '—');
+  set('sumSplhTotal',   (totalHrs > 0 && combinedNet > 0)  ? money(combinedNet/totalHrs)  : '—');
+  set('sumSplhFoh',     (fohHrs > 0 && combinedNet > 0)    ? money(combinedNet/fohHrs)    : '—');
+  set('sumSplhBoh',     (bohHrs > 0 && combinedNet > 0)    ? money(combinedNet/bohHrs)    : '—');
+  set('sumAvgCheck',    (guests > 0 && netSales > 0)    ? money(netSales/guests)    : '—');
+  set('sumTotalHours',  totalHrs > 0 ? totalHrs.toFixed(1) + ' hrs' : '—');
+  set('sumTotalGuests', guests > 0 ? String(Math.round(guests)) : '—');
+}
+
+// Hours inputs: format to 1 decimal on blur, recalc live
+// Hours: accept a shift range ("3-9", "3:30-9", "5-1", "3 to 9") or a plain number.
+// Range rule: if end <= start, the shift crossed noon/midnight, so add 12.
+function parseHours(el) {
+  const raw = (el.textContent || '').trim();
+  if (!raw) return 0;
+  const m = raw.match(/^(\d{1,2})(?::?(\d{2}))?\s*[ap]?\.?m?\.?\s*(?:[-\u2013\u2014]|to)\s*(\d{1,2})(?::?(\d{2}))?\s*[ap]?\.?m?\.?$/i);
+  if (m) {
+    const h1 = parseInt(m[1]), min1 = m[2] ? parseInt(m[2]) : 0;
+    const h2 = parseInt(m[3]), min2 = m[4] ? parseInt(m[4]) : 0;
+    if (h1 <= 12 && h2 <= 12 && min1 < 60 && min2 < 60) {
+      const start = h1 + min1 / 60;
+      let end = h2 + min2 / 60;
+      if (end <= start) end += 12;
+      return end - start;
+    }
+  }
+  return num(el);
+}
+function convertHoursFields() {
+  document.querySelectorAll('.hrs-input').forEach(el => {
+    const v = parseHours(el);
+    el.textContent = v > 0 ? v.toFixed(1) : '';
+  });
+}
+document.querySelectorAll('.hrs-input').forEach(el => {
+  el.addEventListener('input', recalcLabor);
+  el.addEventListener('blur', () => {
+    const v = parseHours(el);
+    el.textContent = v > 0 ? v.toFixed(1) : '';
+    recalcLabor();
+  });
+  el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); el.blur(); } });
+});
+// Net Sales + Final Count also feed labor metrics
+['netSales','finalCount'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) { el.addEventListener('blur', recalcLabor); el.addEventListener('input', recalcLabor); }
+});
+recalcLabor();
+
+
+// ══════════════════════════════════════════
+//  COPY
+// ══════════════════════════════════════════
+function copyReport() {
+  document.querySelectorAll('[data-currency="1"]').forEach(formatCurrency);
+  document.querySelectorAll('[data-percent="1"]').forEach(formatPercent);
+  document.querySelectorAll('[data-reservations="1"]').forEach(formatReservations);
+  document.querySelectorAll('[data-time="1"]').forEach(formatTime);
+  recalcLyVariance();
+  recalcSalesMix();
+  convertHoursFields();
+  recalcLabor();
+
+  const root  = document.getElementById('reportRoot');
+  const clone = root.cloneNode(true);
+
+  const srcNodes = root.querySelectorAll('*');
+  const dstNodes = clone.querySelectorAll('*');
+  const PROPS = [
+    'color','background-color','background','font-family','font-size','font-weight',
+    'font-style','letter-spacing','text-transform','text-align','line-height',
+    'padding','padding-top','padding-right','padding-bottom','padding-left',
+    'margin','margin-top','margin-right','margin-bottom','margin-left',
+    'border','border-top','border-right','border-bottom','border-left',
+    'border-collapse','border-radius','width','min-height','vertical-align','display','white-space'
+  ];
+  srcNodes.forEach((src, i) => {
+    const cs  = window.getComputedStyle(src);
+    const dst = dstNodes[i];
+    let inline = dst.getAttribute('style') || '';
+    PROPS.forEach(p => {
+      const v = cs.getPropertyValue(p);
+      if (v && v !== 'none' && v !== 'normal' && v !== '0px' && !inline.includes(p + ':')) {
+        inline += `${p}:${v};`;
+      }
+    });
+    dst.setAttribute('style', inline);
+    dst.removeAttribute('contenteditable');
+    dst.removeAttribute('data-ph');
+    dst.removeAttribute('data-currency');
+    dst.removeAttribute('data-percent');
+    dst.removeAttribute('data-reservations');
+    dst.removeAttribute('data-time');
+  });
+  clone.style.backgroundColor = '#FFFFFF';
+
+  const html = clone.outerHTML;
+  if (navigator.clipboard && window.ClipboardItem) {
+    const blob = new Blob([html], { type: 'text/html' });
+    const textBlob = new Blob([clone.innerText], { type: 'text/plain' });
+    navigator.clipboard.write([new ClipboardItem({ 'text/html': blob, 'text/plain': textBlob })])
+      .then(flashCopied).catch(() => legacyCopy(clone));
+  } else {
+    legacyCopy(clone);
+  }
+}
+function legacyCopy(el) {
+  const holder = document.createElement('div');
+  holder.style.position = 'fixed'; holder.style.left = '-9999px';
+  holder.appendChild(el);
+  document.body.appendChild(holder);
+  const r = document.createRange();
+  r.selectNode(el);
+  window.getSelection().removeAllRanges();
+  window.getSelection().addRange(r);
+  document.execCommand('copy');
+  window.getSelection().removeAllRanges();
+  document.body.removeChild(holder);
+  flashCopied();
+}
+function flashCopied() {
+  const btn = document.querySelector('.btn-copy');
+  btn.textContent = '✓ Copied!';
+  btn.style.background = 'var(--green)';
+  setTimeout(() => { btn.textContent = '📋 Copy Report'; btn.style.background = ''; }, 2800);
+}
+
+// ══════════════════════════════════════════
+//  CLEAR
+// ══════════════════════════════════════════
+function clearReport() {
+  if (!confirm('Clear all filled-in fields?')) return;
+  document.querySelectorAll('[contenteditable="true"]').forEach(el => el.textContent = '');
+  barManual = false;
+  recalcSalesMix();
+  recalcLyVariance();
+  recalcLabor();
+  fetchWeather();
+}
+</script>
+
+</body>
+</html>
